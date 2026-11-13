@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>丁克與第三拍特訓</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: one reading column; each drill = text column + court diagram, stacking on phones. Sticky player-count switch drives every diagram. */
+:root{
+  --bg:#F1F4F1; --surface:#FFFFFF; --fg:#17201C; --muted:#56635C; --rule:#D5DCD7; --accent:#245FB0;
+  --c-dink:#2C8A66; --c-judge:#CF5230; --c-third:#2E60C4; --c-combo:#7652BE; --c-rest:#9AA59F;
+  --court:#2D5C9B; --kitchen:#3A6CAD; --surround:#3B7455; --cline:#F6F7F2; --net:#141B26;
+  --ball:#DDF247; --attack:#FF6B4A; --move:#FFFFFF; --pL:#EE7434; --pLtext:#FFFFFF; --pR:#F4F1E8; --pRtext:#1A1F1C;
+  --dtext:#FFFFFF; --halo:rgba(8,16,28,.78); --zone:rgba(221,242,71,.2); --basket:#8A6A3E;
+  --go:#2C9C66; --wait:#C9931A; --stop:#D2472E;
+  --font-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --font-num:"Barlow Condensed","Arial Narrow","Noto Sans TC",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1411; --surface:#161D19; --fg:#E3E9E5; --muted:#9AA69F; --rule:#28312C; --accent:#86AEF2;
+  --c-dink:#52B58E; --c-judge:#EE7B57; --c-third:#6F95EA; --c-combo:#A585E3; --c-rest:#6E7973;
+  --court:#244B80; --kitchen:#2D5891; --surround:#274B39; --net:#070A0E; --pR:#E8E4D8;
+  --go:#4CC189; --wait:#E3B23A; --stop:#F06A4E; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F1411; --surface:#161D19; --fg:#E3E9E5; --muted:#9AA69F; --rule:#28312C; --accent:#86AEF2;
+  --c-dink:#52B58E; --c-judge:#EE7B57; --c-third:#6F95EA; --c-combo:#A585E3; --c-rest:#6E7973;
+  --court:#244B80; --kitchen:#2D5891; --surround:#274B39; --net:#070A0E; --pR:#E8E4D8;
+  --go:#4CC189; --wait:#E3B23A; --stop:#F06A4E; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.7}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--accent)}
+h1,h2,h3{text-wrap:balance;margin:0}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+
+/* header */
+.top{padding-block:40px 20px}
+.eyebrow{font-size:12px;letter-spacing:.12em;color:var(--muted);font-weight:500}
+h1{font-size:clamp(30px,5vw,46px);font-weight:900;line-height:1.15;margin-top:6px}
+.lede{max-width:62ch;color:var(--muted);margin:12px 0 0}
+.facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:18px;padding:0;list-style:none}
+.facts li{display:flex;align-items:baseline;gap:6px;color:var(--muted);font-size:13px}
+.facts b{font-family:var(--font-num);font-size:26px;color:var(--fg);font-weight:700;line-height:1}
+
+/* sticky count switch */
+.switch{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--rule)}
+.switch .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:10px}
+.switch label{font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:999px;padding:3px;background:var(--surface)}
+.seg button{all:unset;cursor:pointer;font-family:var(--font-num);font-size:17px;font-weight:700;padding:2px 14px;border-radius:999px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#countNote{font-size:13px;color:var(--fg);min-width:0;flex:1 1 260px}
+
+/* timeline */
+.timeline{margin-top:28px}
+.bar{display:flex;height:34px;border-radius:6px;overflow:hidden;gap:2px}
+.bar span{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;min-width:0}
+.ticks{display:flex;justify-content:space-between;font-family:var(--font-num);font-size:13px;color:var(--muted);margin-top:4px}
+.sched{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 20px;margin:16px 0 0;padding:0;list-style:none}
+.sched li{display:grid;grid-template-columns:76px 1fr auto;gap:8px;align-items:baseline;border-bottom:1px dashed var(--rule);padding-block:4px;font-size:14px}
+.sched .t{font-family:var(--font-num);font-size:16px;color:var(--muted)}
+.sched .m{font-family:var(--font-num);font-size:16px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.cat-dink{background:var(--c-dink)}.cat-judge{background:var(--c-judge)}.cat-third{background:var(--c-third)}.cat-combo{background:var(--c-combo)}.cat-rest{background:var(--c-rest)}
+
+/* rules */
+.rules{margin-top:40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
+.rules h2{font-size:19px;font-weight:700;margin-bottom:8px}
+.rules ul{margin:0;padding-left:1.2em}
+.rules li{margin-bottom:4px}
+.rules li b{font-weight:700}
+
+/* legend */
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--muted);margin:44px 0 0;padding:12px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend svg{flex:none}
+
+/* drills */
+.drill{padding-block:40px;border-bottom:1px solid var(--rule)}
+.drill-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.drill-head .time{font-family:var(--font-num);font-size:22px;font-weight:700;color:var(--muted)}
+.drill-head h2{font-size:clamp(22px,3.2vw,28px);font-weight:900;flex:1 1 100%}
+.tag{font-size:12px;font-weight:700;color:#fff;border-radius:4px;padding:1px 8px;letter-spacing:.06em}
+.mins{font-family:var(--font-num);font-size:18px;font-weight:700}
+.src{font-size:13px;color:var(--muted)}
+.drill-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;margin-top:16px;align-items:start}
+@media (max-width:820px){.drill-body{grid-template-columns:minmax(0,1fr)}.drill-body figure{order:-1}}
+.goal{margin:0 0 14px;max-width:60ch}
+.drill h3{font-size:13px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin:16px 0 6px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.steps li{display:grid;grid-template-columns:64px 1fr;gap:10px}
+.steps .st{font-family:var(--font-num);font-size:16px;font-weight:700;color:var(--muted)}
+.cues{margin:0;padding-left:1.2em}
+.setup{margin:0;padding:10px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--rule)}
+.setup b{font-family:var(--font-num);font-size:16px}
+.target{margin:14px 0 0;font-weight:500}
+.target::before{content:"達標　";color:var(--muted);font-weight:400;font-size:13px}
+figure{margin:0;min-width:0}
+.court{overflow-x:auto;border-radius:8px;background:var(--surround)}
+.court svg{display:block;width:100%;height:auto;min-width:340px}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* lights */
+.lights{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.lights li{display:grid;grid-template-columns:20px 1fr;gap:8px;align-items:baseline}
+.lights i{width:14px;height:14px;border-radius:50%;display:inline-block;transform:translateY(2px)}
+.side{margin-top:12px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:8px}
+.side svg{display:block;width:100%;height:auto}
+.tech{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.tech li{font-size:13px;padding:6px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--surface)}
+.tech li.now{border-color:var(--c-third);box-shadow:inset 3px 0 0 var(--c-third)}
+.tech small{display:block;color:var(--muted)}
+
+/* diagram text */
+.dl{font-family:var(--font-body);font-size:13px;font-weight:700;fill:var(--dtext);paint-order:stroke;stroke:var(--halo);stroke-width:3.5px;stroke-linejoin:round}
+.pt{font-family:var(--font-num);font-size:15px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+
+.end{padding-block:40px 60px;color:var(--muted);font-size:13px}
+.end p{max-width:66ch;margin:0 0 8px}
+@media (prefers-reduced-motion:no-preference){.seg button{transition:background .15s,color .15s}}
+</style>
+<style>:root{color-scheme:light}body{margin:0}</style>
+</head>
+<body>
+
+
+<header class="wrap top">
+  <div class="eyebrow">DUPR 2.5 · 一面場 · 不練抽球</div>
+  <h1>丁克與第三拍特訓</h1>
+  <p class="lede">兩小時集中練三件事：丁克、網前判斷、第三拍放小球。每段都設計成 4 到 6 人同時在場，5、6 人時用「輪打」補位，不排隊、不追球。</p>
+  <ul class="facts">
+    <li><b>120</b>分鐘</li>
+    <li><b>6</b>個練習段</li>
+    <li><b>4–6</b>人</li>
+    <li><b>20</b>顆球 · 2 個球籃</li>
+  </ul>
+</header>
+
+<div class="switch">
+  <div class="wrap">
+    <label id="countLabel">今天幾個人</label>
+    <div class="seg" role="group" aria-labelledby="countLabel">
+      <button type="button" id="c4" data-n="4" aria-pressed="true">4</button>
+      <button type="button" id="c5" data-n="5" aria-pressed="false">5</button>
+      <button type="button" id="c6" data-n="6" aria-pressed="false">6</button>
+    </div>
+    <span id="countNote"></span>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="timeline" aria-label="時間分配">
+    <div class="bar" id="bar"></div>
+    <div class="ticks"><span>0:00</span><span>0:30</span><span>1:00</span><span>1:30</span><span>2:00</span></div>
+    <ul class="sched" id="sched"></ul>
+  </section>
+
+  <section class="rules">
+    <div>
+      <h2>不撿球的做法</h2>
+      <ul>
+        <li>兩個球籃放在<b>餵球員腳邊</b>（網前），總共 20 顆球。</li>
+        <li>每人口袋放 <b>2 顆球</b>。失誤不追，直接拿口袋的球繼續。</li>
+        <li>所有練習都從<b>網前開球</b>，球多半落在廚房附近，伸手就撿到。</li>
+        <li>散在地上的球只在<b>休息時一起收</b>，全員 30 秒收完。</li>
+      </ul>
+    </div>
+    <div>
+      <h2>沒有人閒著的做法</h2>
+      <ul>
+        <li>場地切成<b>線道</b>，每條線道各打各的，同時進行。</li>
+        <li><b>輪打</b>：同一邊兩個人交替擊球，打完退一步，另一人上前。5、6 人時用這招補位。</li>
+        <li>手機開<b>3 分鐘重複計時</b>，響了就換位置或換角色。</li>
+        <li>餵球員也在練：第三拍那段餵球員要打第五拍，丁克段沒有專職餵球員。</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="legend" aria-label="圖例">
+    <span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="var(--pL)"/></svg>左邊球員</span>
+    <span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="var(--pR)" stroke="var(--muted)" stroke-width="1"/></svg>右邊球員</span>
+    <span><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="8" fill="var(--pR)" stroke="var(--muted)" stroke-width="1"/><circle cx="13" cy="13" r="11.5" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3"/></svg>輪打的兩人</span>
+    <span><svg width="34" height="10" viewBox="0 0 34 10"><line x1="1" y1="5" x2="33" y2="5" stroke="#B9CC2A" stroke-width="3"/></svg>球路</span>
+    <span><svg width="34" height="10" viewBox="0 0 34 10"><line x1="1" y1="5" x2="33" y2="5" stroke="#B9CC2A" stroke-width="3" stroke-dasharray="6 4"/></svg>發球 / 餵球</span>
+    <span><svg width="34" height="10" viewBox="0 0 34 10"><line x1="1" y1="5" x2="33" y2="5" stroke="var(--attack)" stroke-width="4"/></svg>加速攻擊</span>
+    <span><svg width="34" height="10" viewBox="0 0 34 10"><line x1="1" y1="5" x2="33" y2="5" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 3"/></svg>人的移動</span>
+  </div>
+
+  <div id="drills"></div>
+
+  <section class="end">
+    <p>影片對照：對角丁克那段取自〈<a href="https://www.youtube.com/watch?v=ZlwpaLAnoHs" target="_blank" rel="noopener">匹克球技術應用：對角線丁克球 - 綜合演練</a>〉；第三拍那段取自〈<a href="https://www.youtube.com/watch?v=hoCB45SDqvo" target="_blank" rel="noopener">6 種擊打三球放短的方法</a>〉。</p>
+    <p>連續兩次練習都達標的段落，下次把時間挪給最弱的那一段。</p>
+  </section>
+</main>
+
+<script>
+(function(){
+const CATS={dink:['丁克','var(--c-dink)'],judge:['網前判斷','var(--c-judge)'],third:['第三拍','var(--c-third)'],combo:['綜合','var(--c-combo)'],rest:['休息','var(--c-rest)']};
+const SCHED=[
+  ['0:00','熱身：直線丁克',10,'dink'],
+  ['0:10','對角丁克綜合演練',20,'dink'],
+  ['0:30','網前判斷：紅綠燈',20,'judge'],
+  ['0:50','喝水＋收球',5,'rest'],
+  ['0:55','第三拍放小球',25,'third'],
+  ['1:20','半場實戰：放小球上網',20,'combo'],
+  ['1:40','全場規則賽',15,'combo'],
+  ['1:55','收球＋檢討',5,'rest']
+];
+const NOTES={
+  4:'4 人：每一段所有人同時在打，沒有輪換。',
+  5:'5 人：其中一條線道改成 1 對 2 輪打，每 3 分鐘換一個人去輪打那邊。',
+  6:'6 人：兩條線道都是 1 對 2 輪打，每 3 分鐘換人當單打那一方。'
+};
+const V2='https://www.youtube.com/watch?v=ZlwpaLAnoHs', V3='https://www.youtube.com/watch?v=hoCB45SDqvo';
+
+const DRILLS=[
+{id:'d1',time:'0:00–0:10',min:10,cat:'dink',title:'熱身：直線丁克',
+ goal:'手感和腳步先進入網前狀態，順便暖身。所有人一開場就站在廚房線上，不用等。',
+ steps:[['0–3′','只用正手丁克'],['3–6′','只用反手丁克'],['6–10′','自由丁克，每拍打完回到準備姿勢']],
+ cues:['從肩膀推送，手腕固定不甩','拍面微開，球的最高點落在自己這一側','膝蓋彎，用腳去找球，不要彎腰撈'],
+ target:'每條線道連續 20 拍不失誤',
+ setup:{4:'左右兩條直線線道，各 1 對 1。',5:'兩條線道，其中一條是 1 對 2 輪打：D、E 交替擊球，打完退一步換人。',6:'切成三條窄線道（每條約 2 公尺寬），各 1 對 1。線道窄，剛好逼大家控制方向。'},
+ caption:'直線丁克：每條線道各打各的，球不會跑進別人的區域。',
+ dia:{
+  4:{lanes:[10],pl:[['A',13.5,5,'L'],['B',30.5,5,'R'],['C',13.5,15,'L'],['D',30.5,15,'R']],
+     paths:[['ball','A','B',-1.6],['ball','B','A',-1.6],['ball','C','D',-1.6],['ball','D','C',-1.6]]},
+  5:{lanes:[10],pl:[['A',13.5,5,'L'],['B',30.5,5,'R'],['C',13.5,15,'L'],['D',30.5,13.2,'R',1],['E',32.4,17,'R',1]],
+     paths:[['ball','A','B',-1.6],['ball','B','A',-1.6],['ball','C','D',-1.4],['ball','E','C',-1.4],['move','D','E',-1.4,'輪打',35.6,15.2]]},
+  6:{lanes:[6.67,13.33],pl:[['A',13.5,3.3,'L'],['B',30.5,3.3,'R'],['C',13.5,10,'L'],['D',30.5,10,'R'],['E',13.5,16.7,'L'],['F',30.5,16.7,'R']],
+     paths:[['ball','A','B',-1.2],['ball','B','A',-1.2],['ball','C','D',-1.2],['ball','D','C',-1.2],['ball','E','F',-1.2],['ball','F','E',-1.2]]}
+ }},
+{id:'d2',time:'0:10–0:30',min:20,cat:'dink',title:'對角丁克綜合演練',src:['匹克球技術應用：對角線丁克球 - 綜合演練',V2],
+ goal:'對角是比賽裡最常見的丁克路線：距離最長、球從網子最低的中間過，容錯最大。這段把對角打穩，再加上移動和比賽壓力。',
+ steps:[['0–6′','合作對角：雙方一起數拍，目標連續 20 拍'],['6–12′','移動對角：可以打到對手左右一步內，打完回到中心'],['12–20′','對角半場比賽到 7 分：只准落在對角那半邊廚房，全部丁克，不准加速']],
+ cues:['腳先到位再出拍，不要伸手去夠','球從網子中間過，那裡最低','打完拍子回到身體前方','兩條對角的球偶爾會在中間相撞，撞到就重開'],
+ target:'合作段連續 20 拍；比賽段每一分至少來回 6 拍',
+ setup:{4:'兩條對角同時打：A↔D、C↔B。',5:'一條 1 對 1；另一條 1 對 2，D、E 輪打。每 3 分鐘換人去輪打那邊。',6:'兩條都是 1 對 2 輪打。每 3 分鐘換人當單打那一方，單打方拍數最多。'},
+ caption:'兩條對角同時進行，球路在網中間交叉。',
+ dia:{
+  4:{pl:[['A',13.5,3.5,'L'],['C',13.5,16.5,'L'],['B',30.5,3.5,'R'],['D',30.5,16.5,'R']],
+     paths:[['ball','A','D',1.4],['ball','D','A',1.4],['ball','C','B',-1.4],['ball','B','C',-1.4]]},
+  5:{pl:[['A',13.5,3.5,'L'],['C',13.5,16.5,'L'],['B',30.5,3.5,'R'],['D',30.5,15.2,'R',1],['E',32.4,18.6,'R',1]],
+     paths:[['ball','A','D',1.4],['ball','E','A',1.4],['ball','C','B',-1.4],['ball','B','C',-1.4],['move','D','E',-1.2,'輪打',35.8,16.8]]},
+  6:{pl:[['A',13.5,3.5,'L'],['C',13.5,16.5,'L'],['B',30.5,4.8,'R',1],['F',32.4,1.4,'R',1],['D',30.5,15.2,'R',1],['E',32.4,18.6,'R',1]],
+     paths:[['ball','A','D',1.4],['ball','E','A',1.4],['ball','C','B',-1.4],['ball','F','C',-1.4],['move','D','E',-1.2,'輪打',35.8,16.8],['move','B','F',1.2,'輪打',35.8,3.4]]}
+ }},
+{id:'d3',time:'0:30–0:50',min:20,cat:'judge',title:'網前判斷：紅綠燈',lights:true,
+ goal:'練「這球能不能打」：擊球點比網高才加速，其他球繼續丁克。打錯燈就算輸，逼大家先判斷再出手。',
+ steps:[['0–8′','半場 1 對 1 紅綠燈：直線線道，拍數多、判斷次數多'],['8–20′','全場紅綠燈對抗賽到 5 分，每局換搭檔']],
+ cues:['紅燈還出手攻擊：就算打贏也算失分','被加速時拍子放胸前，短擋回廚房，不要反抽','肩膀以上、往後飛的球不要碰，大多會出界','出手前喊出燈號（綠／紅），讓判斷變成習慣'],
+ target:'每局紅燈攻擊不超過 1 次；被加速後至少一半能擋回',
+ setup:{4:'前 8 分鐘兩條線道 1 對 1；之後 2 對 2 全場。',5:'前 8 分鐘一條 1 對 1、一條 1 對 2 輪打；之後 3 對 2，每局換人站 3 人那邊。',6:'前 8 分鐘兩條 1 對 2 輪打；之後 3 對 3 全場，每局輪換誰站中間。'},
+ caption:'一分的典型順序：低球丁克 → 對手回高 → 綠燈加速。',
+ dia:{
+  4:{pl:[['A',13.5,5,'L'],['C',13.5,15,'L'],['B',30.5,5,'R'],['D',30.5,15,'R']],
+     paths:[['ball','C','D',-1.4,'① 紅燈：丁克',22,12.6],['ball','D','A',1.2,'② 回高了',24.5,8.9],['attack','A','B',1.4,'③ 綠燈：加速',22,2.8]]},
+  5:{pl:[['A',13.5,3.5,'L'],['C',13.5,10,'L'],['E',13.5,16.5,'L'],['B',30.5,5,'R'],['D',30.5,15,'R']],
+     paths:[['ball','E','D',-1.4,'① 紅燈：丁克',22,17.9],['ball','D','A',1.2,'② 回高了',24.5,8.6],['attack','A','B',1.4,'③ 綠燈：加速',22,2.2]]},
+  6:{pl:[['A',13.5,3.5,'L'],['C',13.5,10,'L'],['E',13.5,16.5,'L'],['B',30.5,3.5,'R'],['D',30.5,10,'R'],['F',30.5,16.5,'R']],
+     paths:[['ball','E','F',-1.4,'① 紅燈：丁克',22,18.2],['ball','F','A',1.2,'② 回高了',24.6,9],['attack','A','B',1.4,'③ 綠燈：加速',22,1.9]]}
+ }},
+{id:'d4',time:'0:55–1:20',min:25,cat:'third',title:'第三拍放小球',src:['6 種擊打三球放短的方法',V3],tech:true,
+ goal:'從底線把球放進對方廚房，替自己爭取上網的時間。2.5 先把推送和鏟送兩種練穩，其他打法等定點命中有 7/10 再加。',
+ steps:[['0–10′','推送（Push drop）定點：餵球員站對面廚房線，餵深球。每人 10 球換位置'],['10–17′','鏟送（Shovel drop）：餵低球、偏身側的球、要往前追的球'],['17–25′','放小球＋上網：放完往前 3–4 步分腿墊步，餵球員回一顆到腳下，在過渡區擋回（第五拍），再往前到廚房線丁克 3 拍']],
+ cues:['推送：拍面微開、從肩膀推、手腕不動，是「送」不是「打」','鏟送：身體壓低、拍頭略高，從球下方鏟起','瞄準對方廚房中間，最高點在自己這側','放完不要站著看球，馬上往前'],
+ target:'定點 10 球至少 5 球進廚房；上網段 10 次至少 5 次走到廚房線',
+ setup:{4:'兩條線道，各 1 人放、1 人餵。每 10 球放和餵互換。',5:'一條線道 1 放 1 餵；另一條 2 人輪放（A、E）。每 10 球三人輪換一個位置。',6:'兩條線道都是 2 人輪放＋1 人餵。每 10 球三人輪換一個位置。'},
+ caption:'球全部落在餵球員那側的廚房，餵球員順手撿回籃子。',
+ dia:{
+  4:{lanes:[10],zones:[[22.3,0.4,5.6,19.2,'目標落點']],baskets:[[32.8,7.6],[32.8,17.6]],
+     pl:[['A',-0.8,5,'L'],['C',-0.8,15,'L'],['B',30.5,5,'R'],['D',30.5,15,'R']],
+     paths:[['feed','B','A',-1.2,'餵深球',15,7.6],['ball','A',[25.3,4],-3.2,'推送',11,1.6],['move',[0.8,8.6],[9.5,8.6],0,'前進 3–4 步',5.2,9.6],
+            ['feed','D','C',-1.2],['ball','C',[25.3,14],-3.2,'鏟送',11,11.6],['move',[0.8,18.6],[9.5,18.6],0]]},
+  5:{lanes:[10],zones:[[22.3,0.4,5.6,19.2,'目標落點']],baskets:[[32.8,7.6],[32.8,17.6]],
+     pl:[['A',-0.8,3.4,'L',1],['E',-1.6,7.2,'L',1],['C',-0.8,15,'L'],['B',30.5,5,'R'],['D',30.5,15,'R']],
+     paths:[['feed','B','A',-1.2,'餵深球',15,6.7],['ball','A',[25.3,4],-3.2,'推送',11,1.2],['move','A','E',-1.2,'輪打',4.2,5.9],
+            ['feed','D','C',-1.2],['ball','C',[25.3,14],-3.2,'鏟送',11,11.6],['move',[0.8,18.6],[9.5,18.6],0,'前進',5.2,19.6]]},
+  6:{lanes:[10],zones:[[22.3,0.4,5.6,19.2,'目標落點']],baskets:[[32.8,7.6],[32.8,17.6]],
+     pl:[['A',-0.8,3.4,'L',1],['E',-1.6,7.2,'L',1],['C',-0.8,13.4,'L',1],['F',-1.6,17.2,'L',1],['B',30.5,5,'R'],['D',30.5,15,'R']],
+     paths:[['feed','B','A',-1.2,'餵深球',15,6.7],['ball','A',[25.3,4],-3.2,'推送',11,1.2],['move','A','E',-1.2,'輪打',4.2,5.9],
+            ['feed','D','C',-1.2],['ball','C',[25.3,14],-3.2,'鏟送',11,11.2],['move','C','F',-1.2,'輪打',4.2,15.9]]}
+ }},
+{id:'d5',time:'1:20–1:40',min:20,cat:'combo',title:'半場實戰：放小球上網',
+ goal:'把第三拍、過渡區擋球、丁克、紅綠燈串成完整一分。用半場打，每個人的擊球次數是全場的兩倍。',
+ steps:[['規則','直線半場，從發球開始。接發方回深後上網；發球方第三拍一定要放小球，不准抽'],['計分','每球得分，打到 7 分。第三拍放進廚房、逼對手往上擊球，額外加 1 分'],['換人','每局結束換對手；6 人時換人當單打方']],
+ cues:['接發球回深、回完馬上上網','第三拍放得好就前進；放高了就停在過渡區準備擋','對手擊球的瞬間分腿墊步','上了網照紅綠燈規則打完'],
+ target:'每局至少 4 次第三拍成功進廚房',
+ setup:{4:'兩條直線半場，各 1 對 1。',5:'一條 1 對 1；另一條 1 對 2，B、E 輪打。',6:'兩條都 1 對 2 輪打，每局換人當單打方。'},
+ caption:'上半場畫開局（發球 → 回深 → 放小球），下半場畫雙方上網後的丁克階段。',
+ dia:{
+  4:{lanes:[10],pl:[['A',-0.8,5,'L'],['B',44.8,5,'R'],['C',13.5,15,'L'],['D',30.5,15,'R']],
+     paths:[['feed','A','B',-1.3,'① 發球',33,2.6],['ball','B','A',-1.3,'② 回深',33,7.7],['ball','A',[25,5.5],-3.2,'③ 放小球',9,1.2],
+            ['move',[43,8.7],[32,8.7],0],['move',[0.8,8.7],[9.5,8.7],0,'雙方上網',5.2,9.7],
+            ['ball','C','D',-1.4,'④ 紅綠燈丁克',22,12.6],['ball','D','C',-1.4]]},
+  5:{lanes:[10],pl:[['A',-0.8,5,'L'],['B',44.8,3.4,'R',1],['E',45.6,7.2,'R',1],['C',13.5,15,'L'],['D',30.5,15,'R']],
+     paths:[['feed','A','B',-1.3,'① 發球',33,1.8],['ball','E','A',-1.3,'② 回深',33,7.9],['ball','A',[25,5.5],-3.2,'③ 放小球',9,1.2],
+            ['move','B','E',1.2,'輪打',41,5.8],['move',[0.8,8.7],[9.5,8.7],0,'上網',5.2,9.7],
+            ['ball','C','D',-1.4,'④ 紅綠燈丁克',22,12.6],['ball','D','C',-1.4]]},
+  6:{lanes:[10],pl:[['A',-0.8,5,'L'],['B',44.8,3.4,'R',1],['E',45.6,7.2,'R',1],['C',13.5,15,'L'],['D',30.5,13.4,'R',1],['F',32.4,17,'R',1]],
+     paths:[['feed','A','B',-1.3,'① 發球',33,1.8],['ball','E','A',-1.3,'② 回深',33,7.9],['ball','A',[25,5.5],-3.2,'③ 放小球',9,1.2],
+            ['move','B','E',1.2,'輪打',41,5.8],['move',[0.8,8.7],[9.5,8.7],0,'上網',5.2,9.7],
+            ['ball','C','D',-1.4,'④ 紅綠燈丁克',21,12.4],['ball','F','C',-1.4],['move','D','F',-1.2,'輪打',35.6,15.3]]}
+ }},
+{id:'d6',time:'1:40–1:55',min:15,cat:'combo',title:'全場規則賽',
+ goal:'用比賽確認今天的東西有沒有帶上場。規則只留兩條：第三拍必須放小球、網前照紅綠燈。',
+ steps:[['規則','第三拍抽球直接失分；紅燈攻擊直接失分'],['局數','每球得分，一局 7 分（5、6 人一局 5 分），打完換搭檔或換位置'],['提醒','放小球和丁克優先打兩人中間']],
+ cues:['打中間：兩人都猶豫，誰都不好攻','和搭檔像繩子綁著，一起前進、一起左右移動','判斷時喊出來：「綠！」「出界！」'],
+ target:'整局第三拍抽球 0 次、紅燈攻擊 0 次',
+ setup:{4:'2 對 2 全場，從發球開始。',5:'3 對 2 全場網前賽，用丁克開球，每局換人站 3 人那邊。',6:'3 對 3 全場網前賽，用丁克開球，每局輪換誰站中間。'},
+ caption:'4 人照正常雙打打；5、6 人改成網前賽，所有人都在場上。',
+ dia:{
+  4:{pl:[['A',-0.8,15,'L'],['C',-0.8,5,'L'],['B',44.8,5,'R'],['D',30.5,15,'R']],
+     paths:[['feed','A','B',1.4,'① 發球',37,10.6],['ball','B','A',1.4,'② 回深',7.5,10.9],['ball','A',[25,10],-2.6,'③ 第三拍打中間',26,8.1],
+            ['move',[1.2,13.2],[9.5,12.4],0],['move',[1.2,6.8],[9.5,7.6],0],['move',[43,6.8],[32,6.8],0,'上網',37.6,5.6]]},
+  5:{pl:[['A',13.5,3.5,'L'],['C',13.5,10,'L'],['E',13.5,16.5,'L'],['B',30.5,5,'R'],['D',30.5,15,'R']],
+     paths:[['feed','C','D',-1.2,'丁克開球',22,14.4],['ball','D','A',1.2],['ball','A','B',-1.2]]},
+  6:{pl:[['A',13.5,3.5,'L'],['C',13.5,10,'L'],['E',13.5,16.5,'L'],['B',30.5,3.5,'R'],['D',30.5,10,'R'],['F',30.5,16.5,'R']],
+     paths:[['feed','C','D',-1.2,'丁克開球',22,8.2],['ball','D','E',1.2],['ball','E','F',-1.2]]}
+ }}
+];
+
+const F=x=>40+x*10, G=y=>40+y*10;
+const STY={ball:'stroke:var(--ball);stroke-width:2.6',feed:'stroke:var(--ball);stroke-width:2.4;stroke-dasharray:7 5',
+           attack:'stroke:var(--attack);stroke-width:4',move:'stroke:var(--move);stroke-width:2;stroke-dasharray:3 4;opacity:.9'};
+const MK={ball:'b',feed:'b',attack:'a',move:'m'};
+
+function court(d,key){
+  const P={}; d.pl.forEach(p=>P[p[0]]={x:p[1],y:p[2]});
+  let s=`<svg viewBox="0 0 520 280" role="img" aria-label="場地示意圖"><defs>`+
+   [['b','var(--ball)'],['a','var(--attack)'],['m','var(--move)']].map(([k,c])=>
+   `<marker id="mk-${k}-${key}" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M0,1 L10,5 L0,9 z" style="fill:${c}"/></marker>`).join('')+`</defs>`;
+  s+=`<rect width="520" height="280" style="fill:var(--surround)"/>`;
+  s+=`<rect x="${F(0)}" y="${G(0)}" width="440" height="200" style="fill:var(--court)"/>`;
+  s+=`<rect x="${F(15)}" y="${G(0)}" width="140" height="200" style="fill:var(--kitchen)"/>`;
+  (d.zones||[]).forEach(z=>{s+=`<rect x="${F(z[0])}" y="${G(z[1])}" width="${z[2]*10}" height="${z[3]*10}" rx="4" style="fill:var(--zone);stroke:var(--ball);stroke-width:1.5;stroke-dasharray:4 4"/>`;
+    if(z[4]) s+=`<text class="dl" x="${F(z[0]+z[2]/2)}" y="${G(z[1]+z[3])-8}" text-anchor="middle">${z[4]}</text>`;});
+  const ln='stroke:var(--cline);stroke-width:2;fill:none';
+  s+=`<rect x="${F(0)}" y="${G(0)}" width="440" height="200" style="${ln}"/>`;
+  s+=`<line x1="${F(15)}" y1="${G(0)}" x2="${F(15)}" y2="${G(20)}" style="${ln}"/><line x1="${F(29)}" y1="${G(0)}" x2="${F(29)}" y2="${G(20)}" style="${ln}"/>`;
+  s+=`<line x1="${F(0)}" y1="${G(10)}" x2="${F(15)}" y2="${G(10)}" style="${ln}"/><line x1="${F(29)}" y1="${G(10)}" x2="${F(44)}" y2="${G(10)}" style="${ln}"/>`;
+  (d.lanes||[]).forEach(y=>{s+=`<line x1="${F(-2.5)}" y1="${G(y)}" x2="${F(46.5)}" y2="${G(y)}" style="stroke:var(--ball);stroke-width:1.5;stroke-dasharray:2 6;opacity:.75"/>`;});
+  s+=`<line x1="${F(22)}" y1="${G(-1.2)}" x2="${F(22)}" y2="${G(21.2)}" style="stroke:var(--net);stroke-width:5"/>`;
+  s+=`<line x1="${F(22)}" y1="${G(-1.2)}" x2="${F(22)}" y2="${G(21.2)}" style="stroke:var(--cline);stroke-width:1;stroke-dasharray:2 3;opacity:.6"/>`;
+  s+=`<text class="dl" x="${F(15)}" y="${G(20)+22}" text-anchor="middle" style="font-size:11px;font-weight:500">廚房線</text><text class="dl" x="${F(29)}" y="${G(20)+22}" text-anchor="middle" style="font-size:11px;font-weight:500">廚房線</text>`;
+  (d.baskets||[]).forEach(b=>{const x=F(b[0]),y=G(b[1]);
+    s+=`<rect x="${x-9}" y="${y-7}" width="18" height="14" rx="2" style="fill:var(--basket);stroke:var(--cline);stroke-width:1.2"/><circle cx="${x-4}" cy="${y-6}" r="3" style="fill:var(--ball)"/><circle cx="${x+3}" cy="${y-7}" r="3" style="fill:var(--ball)"/>`;});
+  const pt=r=>typeof r==='string'?{...P[r],pl:true}:{x:r[0],y:r[1],pl:false};
+  const labels=[];
+  d.paths.forEach(p=>{
+    const [type,fr,to,bend,label,lx,ly]=p; let a=pt(fr),b=pt(to);
+    let dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+    const sa=a.pl?1.4:0, sb=b.pl?1.6:0;
+    const A={x:a.x+ux*sa,y:a.y+uy*sa}, B={x:b.x-ux*sb,y:b.y-uy*sb};
+    const nx=-uy,ny=ux, C={x:(A.x+B.x)/2+nx*bend,y:(A.y+B.y)/2+ny*bend};
+    s+=`<path d="M${F(A.x)},${G(A.y)} Q${F(C.x)},${G(C.y)} ${F(B.x)},${G(B.y)}" style="fill:none;${STY[type]}" marker-end="url(#mk-${MK[type]}-${key})"/>`;
+    if(label){const X=lx!=null?lx:.25*A.x+.5*C.x+.25*B.x, Y=ly!=null?ly:.25*A.y+.5*C.y+.25*B.y-0.6;
+      labels.push(`<text class="dl" x="${F(X)}" y="${G(Y)}" text-anchor="middle">${label}</text>`);}
+  });
+  d.pl.forEach(p=>{const [id,x,y,side,rot]=p,X=F(x),Y=G(y);
+    if(rot) s+=`<circle cx="${X}" cy="${Y}" r="15" style="fill:none;stroke:var(--move);stroke-width:1.5;stroke-dasharray:3 3"/>`;
+    s+=`<circle cx="${X}" cy="${Y}" r="11" style="fill:var(--p${side});stroke:var(--net);stroke-width:1.5"/><text class="pt" x="${X}" y="${Y+1}" style="fill:var(--p${side}text)">${id}</text>`;});
+  return s+labels.join('')+`</svg>`;
+}
+
+function sideView(){
+  const balls=[['var(--go)',58,'綠燈'],['var(--wait)',90,'黃燈'],['var(--stop)',118,'紅燈']];
+  let s=`<svg viewBox="0 0 360 166" role="img" aria-label="擊球點高度和燈號"><line x1="10" y1="138" x2="350" y2="138" style="stroke:var(--muted);stroke-width:2"/>`;
+  s+=`<rect x="208" y="90" width="6" height="48" style="fill:var(--muted)"/><line x1="211" y1="90" x2="211" y2="138" style="stroke:var(--fg);stroke-width:3"/>`;
+  s+=`<line x1="40" y1="90" x2="330" y2="90" style="stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4"/><text x="334" y="86" text-anchor="end" style="fill:var(--muted);font-size:11px;font-family:var(--font-body)">網高</text>`;
+  balls.forEach(([c,y,t],i)=>{const x=120+i*0;s+=`<circle cx="${130}" cy="${y}" r="9" style="fill:${c}"/><text x="${150}" y="${y+4}" style="fill:var(--fg);font-size:13px;font-weight:700;font-family:var(--font-body)">${t}</text>`;});
+  s+=`<text x="130" y="156" text-anchor="middle" style="fill:var(--muted);font-size:11px;font-family:var(--font-body)">擊球點（你這一側）</text><text x="280" y="156" text-anchor="middle" style="fill:var(--muted);font-size:11px;font-family:var(--font-body)">對手</text>`;
+  return s+`</svg>`;
+}
+
+const TECH=[['推送 Push drop','今天練',1],['鏟送 Shovel drop','今天練',1],['正手上旋放小球','推送 7/10 後'],['雙手反拍上旋放小球','推送 7/10 後'],['反手切放小球','被拉開時用'],['Chariot whip 放小球','進階']];
+
+function renderDrills(n){
+  document.getElementById('drills').innerHTML=DRILLS.map(d=>{
+    const [cl,cc]=CATS[d.cat];
+    let extra='';
+    if(d.lights) extra=`<h3>判斷三燈</h3><ul class="lights">
+      <li><i style="background:var(--go)"></i><span><b>綠燈</b>　擊球點高於網：可以加速，打對手拍子那側的肩膀或腳下。</span></li>
+      <li><i style="background:var(--wait)"></i><span><b>黃燈</b>　跟網差不多高：不加速，打一顆壓深或打腳下的丁克。</span></li>
+      <li><i style="background:var(--stop)"></i><span><b>紅燈</b>　低於網：只能軟丁克回廚房。</span></li></ul>
+      <div class="side">${sideView()}</div>`;
+    if(d.tech) extra=`<h3>常見 6 種放小球打法</h3><ul class="tech">${TECH.map(t=>`<li class="${t[2]?'now':''}">${t[0]}<small>${t[1]}</small></li>`).join('')}</ul>`;
+    return `<section class="drill" id="${d.id}">
+      <div class="drill-head"><span class="time">${d.time}</span><span class="mins">${d.min} 分</span>
+        <span class="tag" style="background:${cc}">${cl}</span>
+        ${d.src?`<span class="src">來源：<a href="${d.src[1]}" target="_blank" rel="noopener">${d.src[0]}</a></span>`:''}
+        <h2>${d.title}</h2></div>
+      <div class="drill-body">
+        <div>
+          <p class="goal">${d.goal}</p>
+          <h3>站位</h3><p class="setup"><b>${n} 人</b>　${d.setup[n]}</p>
+          <h3>進程</h3><ol class="steps">${d.steps.map(s=>`<li><span class="st">${s[0]}</span><span>${s[1]}</span></li>`).join('')}</ol>
+          <h3>動作重點</h3><ul class="cues">${d.cues.map(c=>`<li>${c}</li>`).join('')}</ul>
+          ${extra}
+          <p class="target">${d.target}</p>
+        </div>
+        <figure><div class="court">${court(d.dia[n],d.id+n)}</div><figcaption>${d.caption}</figcaption></figure>
+      </div></section>`;
+  }).join('');
+}
+
+function renderTimeline(){
+  document.getElementById('bar').innerHTML=SCHED.map(s=>`<span style="flex:${s[2]};background:${CATS[s[3]][1]}" title="${s[1]}">${s[2]>=15?s[1]:''}</span>`).join('');
+  document.getElementById('sched').innerHTML=SCHED.map(s=>`<li><span class="t">${s[0]}</span><span><i class="dot cat-${s[3]}"></i>${s[1]}</span><span class="m">${s[2]}′</span></li>`).join('');
+}
+
+function setCount(n){
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.n==n)));
+  document.getElementById('countNote').textContent=NOTES[n];
+  renderDrills(n);
+  try{localStorage.setItem('pb-count',n)}catch(e){}
+}
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>setCount(b.dataset.n)));
+renderTimeline();
+let start='4'; try{const v=localStorage.getItem('pb-count'); if(['4','5','6'].includes(v)) start=v;}catch(e){}
+setCount(start);
+})();
+</script>
+
+</body>
+</html>
